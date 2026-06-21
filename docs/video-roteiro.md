@@ -1,79 +1,198 @@
-# Roteiro do vídeo de entrega (~8 min) — Clínica Médica DELT
+# Roteiro do vídeo de entrega — Clínica Médica DELT
 
-Demonstração exigida pelo `FormEntrega_TrabClinicaMedica.docx`. O vídeo deve
-**começar pelo DER**, percorrer as 5 funcionalidades da rubrica, mostrar código
-e o banco respondendo a uma query. **Todos os integrantes** devem falar.
+Demonstração para a avaliação (`FormEntrega_TrabClinicaMedica.docx` +
+`Rubrica_BD_ClinicaMedica.pdf`). **Duração-alvo: ~10 min** (8 ±2).
 
-> Antes de gravar: `python main.py` cria/popula o banco automaticamente. Tenha
-> também um terminal aberto em `sqlite3 clinica_medica.db` para mostrar uma query.
+> **Narrativa central (decore esta frase):** *"O coração do projeto é o banco
+> SQLite. Sobre o MESMO banco e as MESMAS queries existem duas interfaces: o
+> programa em console — que implementa as 5 funcionalidades da rubrica — e um
+> frontend web que consome exatamente a mesma estrutura de 7 tabelas."*
+>
+> Cada funcionalidade é mostrada **três vezes**: (1) a **query SQL** que a
+> resolve, (2) o **programa console** executando, (3) o **frontend** consumindo
+> a mesma estrutura. O foco da fala é sempre **o banco**.
 
-## Índice de capítulos (cole na descrição do vídeo no YouTube)
+## Como o vídeo prova cada exigência da rubrica
 
-Para criar o índice, o primeiro item **deve** ser `00:00`. Cole exatamente assim:
+| Item da rubrica | O que o avaliador quer ver | Onde mostramos |
+|---|---|---|
+| DER (1,0) | DER no início, correto, explicado (entidades/atributos/relacionamentos + escolhas) | Cap. 1 |
+| 1. Agendar (2,0) | pede paciente/profissional/data/horário/sala; valida disponibilidade + 3 conflitos; impede inválido; status "Agendada"; SELECT+INSERT | Cap. 4 |
+| 2. Listar do dia (1,5) | por data; horário/paciente/profissional/sala/status; ordenado por horário; JOIN | Cap. 5 |
+| 3. Histórico (2,0) | por **CPF**; data/horário/profissional/especialidade/sala/status/observações; ordem decrescente; JOIN | Cap. 6 |
+| 4. Alterar status (2,0) | lista, seleciona; 4 estados; "Realizada" pede observações; realizada vira imutável; UPDATE | Cap. 7 |
+| 5. Relatório (1,5) | por profissional: total/realizadas/cancelamentos/faltas/futuras; GROUP BY + COUNT + JOIN | Cap. 8 |
+
+---
+
+## Pré-gravação (deixar aberto)
+
+- **Janela 1 — DER:** `docs/der.png` em tela cheia.
+- **Janela 2 — Editor (VS Code):** abrir `sql/schema.sql`, `src/clinica/repositories.py`,
+  `src/clinica/services.py` e, do frontend, `src/data/store.tsx`.
+- **Janela 3 — Terminal A (programa):** na raiz, pronto para `python main.py`.
+- **Janela 4 — Terminal B (SQLite):** `sqlite3 clinica_medica.db` aberto, com
+  `.headers on` e `.mode column` já digitados (banco responde "ao vivo").
+- **Janela 5 — Navegador:** `npm run dev` no frontend, em `localhost:5173`.
+
+## Índice de capítulos (colar na descrição do YouTube — o 1º item deve ser 00:00)
 
 ```
-00:00 Apresentação da equipe e do projeto
-00:30 Diagrama Entidade-Relacionamento (DER)
-02:00 Visão geral do código (arquitetura em camadas)
-03:00 1. Agendar nova consulta (e validações de conflito)
-04:30 2. Listar consultas do dia
-05:15 3. Consultar histórico de um paciente
-06:00 4. Alterar status de uma consulta
-07:00 5. Relatório de atendimentos por profissional
-07:45 Banco respondendo a uma query (sqlite3) + bônus
-08:15 Encerramento
+00:00 Apresentação da equipe e da arquitetura
+00:40 Diagrama Entidade-Relacionamento (DER) e normalização
+02:30 Visão geral do código (camadas) e o banco SQLite
+03:30 1. Agendar consulta — validações, SELECT e INSERT
+05:10 2. Listar consultas do dia — JOIN + ORDER BY
+05:55 3. Histórico do paciente por CPF — múltiplos JOIN
+06:50 4. Alterar status — UPDATE e regra de imutabilidade
+07:45 5. Relatório por profissional — GROUP BY + COUNT
+08:40 Frontend web: como a interface conversa com o banco
+09:40 Funcionalidades bônus e encerramento
 ```
 
-## Divisão sugerida entre os integrantes
+## Divisão entre os integrantes (todos falam)
 
-| Trecho | Responsável |
+| Capítulos | Responsável |
 |---|---|
-| Abertura + DER + normalização | **André Victor** |
-| Arquitetura do código + funções 1 e 2 | **Gabriel Silverio** |
-| Funções 3, 4, 5 + query no sqlite3 + bônus | **Patrick Henrique** |
+| 0–2 (abertura, DER, normalização) | **André Victor** |
+| 3–5 (camadas + Agendar + Listar) | **Gabriel Silverio** |
+| 6–10 (Histórico, Status, Relatório, Frontend, bônus) | **Patrick Henrique** |
 
-## Roteiro detalhado
+---
 
-**00:00 — Abertura.** "Somos André, Gabriel e Patrick. Este é o projeto da
-Clínica Médica DELT, um sistema de agendamento em Python + SQLite."
+# Roteiro detalhado (Tela ▸ Fala ▸ Query/Código)
 
-**00:30 — DER.** Mostrar `docs/der.png`. Explicar as 7 entidades e os
-relacionamentos 1:N (Especialidade→Profissional, Profissional→Disponibilidade,
-Turno→Disponibilidade, Profissional/Paciente/Sala→Consulta). Citar que o modelo
-está em 1FN/2FN/3FN (resumir `docs/normalizacao.md`).
+## 00:00 — Abertura · *André*
+- **[TELA]** Frontend na tela de escolha de perfil (visual bonito) → depois `docs/der.png`.
+- **[FALA]** "Somos André, Gabriel e Patrick. Desenvolvemos a Clínica Médica DELT:
+  um banco de dados SQLite com 7 tabelas e duas interfaces sobre ele — um programa
+  em Python no console e um frontend web. **Tudo gira em torno do banco**: as duas
+  interfaces usam a mesma modelagem e as mesmas regras."
 
-**02:00 — Código.** Abrir `src/clinica/` e explicar as camadas: `database`
-(conexão + PRAGMA foreign_keys), `repositories` (todo o SQL), `services`
-(regras de negócio) e `cli`/`ui` (menu e apresentação). Destacar que o SQL fica
-isolado no repositório.
+## 00:40 — DER e normalização · *André* · (rubrica DER, 1,0)
+- **[TELA]** `docs/der.png` (Crow's Foot). Ir apontando com o cursor cada entidade.
+- **[FALA — entidades]** "Sete entidades: **Especialidade, Profissional, Turno,
+  Disponibilidade, Paciente, Sala e Consulta**. A entidade central é **Consulta**,
+  que conecta um profissional, um paciente e uma sala em uma data e horário."
+- **[FALA — relacionamentos 1:N]** "Os relacionamentos são todos 1:N:
+  uma Especialidade tem vários Profissionais; um Profissional tem várias
+  Disponibilidades e várias Consultas; um Turno aparece em várias Disponibilidades;
+  Paciente e Sala também se ligam a várias Consultas. Repare na notação pé-de-galinha:
+  o lado 'muitos' fica em Consulta e Disponibilidade."
+- **[FALA — escolha de modelagem]** "Decisão importante: **disponibilidade** é
+  modelada como *(dia da semana + turno)* — por isso existe a tabela `Turno`, que
+  define a faixa de horário. Isso evita repetir horários e é o que permite validar
+  o agendamento depois."
+- **[FALA — normalização]** "O banco está em **1FN** (todos os campos atômicos,
+  sem grupos repetidos — cada disponibilidade é uma linha), **2FN** (todas as
+  chaves primárias são simples, então não há dependência parcial) e **3FN**
+  (nenhum dado de outra entidade é duplicado: guardamos `especialidadeID` em
+  Profissional, não o nome; em Consulta guardamos as FKs, não nomes)."
+- **[TELA]** Mostrar rapidamente `docs/normalizacao.md` rolando.
 
-**03:00 — Agendar (rubrica 1).** No menu, opção 1. Mostrar um agendamento
-**válido**. Depois provocar cada conflito: profissional sem disponibilidade no
-dia, horário do profissional ocupado, sala ocupada, paciente já com consulta.
-Mostrar a query `INSERT` em `repositories.inserir_consulta` e as validações em
-`services.agendar_consulta`.
+## 02:30 — Camadas e o banco · *Gabriel*
+- **[TELA]** Estrutura de pastas no VS Code; abrir `sql/schema.sql`.
+- **[FALA]** "O banco é criado por `sql/schema.sql`. Note os `FOREIGN KEY` e o
+  `CHECK(estado IN ('Agendada','Realizada','Cancelada','Faltou'))` — a integridade
+  é garantida no próprio SQLite, não só no código."
+- **[TELA]** Abrir `src/clinica/` e mostrar os arquivos.
+- **[FALA]** "O código é em camadas: **`repositories.py`** concentra TODO o SQL,
+  **`services.py`** tem as regras de negócio, e `cli.py`/`ui.py` a interface. Isso
+  é proposital: a mesma regra pode ser usada pelo console e, no futuro, por uma API
+  para o frontend. Vou mostrar cada funcionalidade pela query e pelo programa rodando."
+- **[TELA]** `python main.py` no Terminal A → menu aparece.
 
-**04:30 — Listar do dia (rubrica 2).** Opção 2, informar `2026-06-22`. Mostrar a
-listagem ordenada por horário e a query com **JOIN** em `consultas_do_dia`.
+## 03:30 — 1. Agendar consulta · *Gabriel* · (rubrica 1, 2,0)
+- **[TELA]** Menu → opção **1**. Preencher paciente, profissional, data, horário, sala.
+- **[FALA — o que valida]** "Antes de inserir, o sistema faz **quatro validações**,
+  todas como `SELECT` no banco."
+- **[TELA]** Abrir `repositories.py` e mostrar, nesta ordem:
+  - `turno_do_horario` → `SELECT turnoNome FROM Turno WHERE horarioInicio <= ? AND ? < horarioFim`
+  - `profissional_disponivel` → `SELECT 1 FROM Disponibilidade WHERE profissionalID=? AND dia=? AND turnoNome=?`
+  - `conflito_profissional/_sala/_paciente` → `... FROM Consulta WHERE <campo>=? AND data=? AND horario=? AND estado IN ('Agendada','Realizada')`
+- **[FALA]** "Primeiro, qual turno contém o horário. Depois, se o profissional
+  **atende** naquele dia da semana e turno (tabela Disponibilidade). Por fim, três
+  checagens de conflito — profissional, sala e paciente — considerando só consultas
+  **ativas** (Agendada ou Realizada)."
+- **[TELA]** Provocar um conflito de propósito (ex.: horário já ocupado) → mostrar a
+  mensagem de bloqueio. Depois fazer um agendamento **válido**.
+- **[FALA]** "Conflito → o sistema **impede** e explica o motivo. Válido → executa o
+  `INSERT` com estado inicial **'Agendada'**."
+- **[TELA]** `repositories.inserir_consulta` (o `INSERT ... VALUES (?, ?, 'Agendada', ...)`).
+- **[TELA — banco ao vivo · Terminal B]** Rodar
+  `SELECT consultaID, data, horario, estado FROM Consulta ORDER BY consultaID DESC LIMIT 1;`
+  e mostrar a consulta recém-criada com estado 'Agendada'.
 
-**05:15 — Histórico (rubrica 3).** Opção 3, CPF `111.111.111-11`. Mostrar ordem
-cronológica decrescente, especialidade e observações; a query usa múltiplos
-JOINs (`historico_por_cpf`).
+## 05:10 — 2. Listar consultas do dia · *Gabriel* · (rubrica 2, 1,5)
+- **[TELA]** Menu → opção **2** → informar `2026-06-22`.
+- **[FALA]** "Listagem por data, com **JOIN** entre Consulta, Paciente, Profissional
+  e Sala, **ordenada por horário**."
+- **[TELA]** `repositories.consultas_do_dia` — destacar os `JOIN` e o `ORDER BY c.horario`.
+- **[TELA — Terminal B]** Rodar a mesma query no sqlite3 para o banco responder ao vivo.
 
-**06:00 — Alterar status (rubrica 4).** Opção 4. Marcar uma consulta como
-**Realizada** (pedir observações). Tentar alterar uma já Realizada e mostrar o
-bloqueio. Destacar o `UPDATE` em `atualizar_status`.
+## 05:55 — 3. Histórico do paciente · *Patrick* · (rubrica 3, 2,0)
+- **[TELA]** Menu → opção **3** → CPF `111.111.111-11`.
+- **[FALA]** "Busca pelo **CPF**. Aqui há **quatro JOINs** — inclusive com
+  `Especialidade` (via Profissional) — e a ordem é **cronológica decrescente**
+  (`ORDER BY data DESC, horario DESC`). Mostramos data, horário, profissional,
+  especialidade, sala, status e as **observações** do médico."
+- **[TELA]** `repositories.historico_por_cpf` — apontar os JOINs e o ORDER BY.
 
-**07:00 — Relatório (rubrica 5).** Opção 5. Mostrar total/realizadas/canceladas/
-faltas por profissional e as consultas futuras. Apontar `GROUP BY`, `COUNT` e
-`CASE` em `estatisticas_por_profissional`.
+## 06:50 — 4. Alterar status · *Patrick* · (rubrica 4, 2,0)
+- **[TELA]** Menu → opção **4** → listar consultas → escolher uma 'Agendada' → marcar **Realizada**.
+- **[FALA]** "São quatro estados. Ao marcar como **Realizada**, o sistema **exige as
+  observações** médicas. E uma consulta já realizada **não pode mais ser alterada** —
+  essa regra está em `services.alterar_status`."
+- **[TELA]** Tentar alterar uma consulta já 'Realizada' → mostrar o bloqueio.
+- **[TELA]** `repositories.atualizar_status` → `UPDATE Consulta SET estado=?, descricao=? WHERE consultaID=?`.
+- **[TELA — Terminal B]** `SELECT estado, descricao FROM Consulta WHERE consultaID=<id>;` confirmando o UPDATE.
 
-**07:45 — Query no banco + bônus.** No `sqlite3`, rodar por exemplo:
-`SELECT estado, COUNT(*) FROM Consulta GROUP BY estado;`. Mostrar rapidamente as
-funções bônus (cadastrar paciente/profissional, listar especialidades) e os
-**testes** (`pytest -q`, 25 passando).
+## 07:45 — 5. Relatório por profissional · *Patrick* · (rubrica 5, 1,5)
+- **[TELA]** Menu → opção **5** → relatório.
+- **[FALA]** "Relatório estatístico com **GROUP BY** por profissional, **COUNT** e
+  `SUM(CASE WHEN ...)` para contar realizadas, cancelamentos e faltas, além das
+  **consultas futuras** agendadas. Um `LEFT JOIN` garante que um profissional sem
+  consultas também apareça (zerado)."
+- **[TELA]** `repositories.estatisticas_por_profissional` (o SELECT com GROUP BY/COUNT/CASE)
+  e `consultas_futuras_do_profissional`.
+- **[TELA — Terminal B]** Rodar
+  `SELECT estado, COUNT(*) FROM Consulta GROUP BY estado;` para o banco responder ao vivo.
 
-**08:15 — Encerramento.** Comentar aprendizados e uso de IA (ver formulário).
+## 08:40 — Frontend: como conversa com o banco · *Patrick*
+- **[TELA]** Navegador → entrar como **Paciente**.
+- **[FALA — relação com o banco]** "O frontend é a camada visual sobre o **mesmo
+  banco**. A regra que mais importa: ao agendar, só aparecem horários que **cruzam a
+  `Disponibilidade` do médico** e que **não estão ocupados** — exatamente a lógica do
+  console. Verde = livre, vermelho = ocupado/bloqueado."
+- **[TELA]** Buscar um médico (autocomplete) → filtrar por especialidade → escolher
+  uma data no calendário → ver os slots de 30 min (verdes/vermelhos) → confirmar.
+- **[TELA]** Abrir `frontend/src/data/store.tsx` → função `agendar` (mesmas 4
+  validações) e `slotsDoDia` (interseção Disponibilidade × consultas ativas).
+- **[FALA — integridade do esquema]** "Ponto importante para a modelagem: **não
+  alteramos o esquema**. O *padrão semanal* do médico vira linhas em
+  `Disponibilidade`; um agendamento é um `INSERT` em `Consulta` com estado
+  'Agendada'. E os **bloqueios de agenda**, que não têm tabela própria, são
+  `Consulta` reservadas a um paciente interno — o slot fica ocupado sem inventar
+  tabela nova."
+- **[TELA]** Entrar como **Médico** → agenda semanal em blocos de 30 min (cartões
+  clicáveis) → aba "Meus horários": ligar/desligar turnos (Disponibilidade) e criar
+  um bloqueio. Mostrar que o bloqueio deixa o horário vermelho/indisponível.
+- **[FALA]** "Na integração final, só trocamos o `store` por chamadas a uma API que
+  fala com o SQLite — a interface continua igual."
 
-> **Lembrete:** o vídeo precisa estar **público** ou **não listado**. Teste o
-> link em um navegador deslogado antes de colar no PDF de entrega.
+## 09:40 — Bônus e encerramento · *equipe*
+- **[FALA]** "Como diferenciais: testes automatizados (`pytest`, 25 casos) cobrindo
+  as regras, CI no GitHub Actions, o DER gerado por script, e funções extras de
+  cadastro. Tudo público no repositório **github.com/andrevictorx/clinica-medica-delt**."
+- **[TELA]** Rodar `pytest -q` (tudo verde) e mostrar o repositório.
+- **[FALA]** Encerrar agradecendo e comentando o aprendizado (chaves, JOINs,
+  normalização e integridade aplicada na prática).
+
+---
+
+### Checklist final antes de subir
+- [ ] Vídeo **começa pelo DER**. ✔ exigência da rubrica
+- [ ] As 5 funcionalidades aparecem **rodando** + **a query** + **o banco respondendo**.
+- [ ] Os três integrantes falaram.
+- [ ] Vídeo **público/não-listado**; testar o link em navegador deslogado.
+- [ ] Índice de capítulos colado na descrição (primeiro item `00:00`).

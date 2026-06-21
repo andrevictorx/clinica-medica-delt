@@ -45,6 +45,24 @@ Menu principal (rubrica do trabalho):
 
 **Bônus:** cadastrar paciente, cadastrar profissional e listar especialidades.
 
+## 💻 Frontend web (React + Tailwind)
+
+Além do programa em console, o projeto inclui uma **interface web profissional**
+em [`frontend/`](frontend/) — React 19 + TypeScript + Vite + Tailwind CSS v4.
+
+- **Paciente:** dashboard com próximas consultas, busca de médico com
+  autocomplete, filtro por especialidade, calendário e seleção de horários que
+  cruzam a disponibilidade do médico (verde = livre, vermelho = ocupado/bloqueado).
+- **Médico:** agenda semanal em blocos de 30 min com cartões clicáveis, e
+  configuração do padrão semanal de atendimento + bloqueios pontuais.
+- **UX:** tour de onboarding guiado, skeleton loaders, toasts e identidade UFPR.
+- **Integridade:** os dados são mock espelhando as 7 tabelas; nada altera o
+  esquema (ver [frontend/README.md](frontend/README.md)).
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
 ## 🏗️ Arquitetura
 
 ```

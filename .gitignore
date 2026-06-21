@@ -1,0 +1,16 @@
+# Banco de dados gerado em runtime
+*.db
+sql/dump.sql
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Sistema operacional / editor
+.DS_Store
+.idea/
+.vscode/

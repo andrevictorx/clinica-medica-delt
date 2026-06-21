@@ -1,0 +1,3 @@
+# A aplicação usa apenas a biblioteca padrão do Python (incl. sqlite3).
+# A dependência abaixo é necessária somente para rodar os testes.
+pytest>=7.0
